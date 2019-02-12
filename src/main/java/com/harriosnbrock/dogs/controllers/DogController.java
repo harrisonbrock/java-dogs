@@ -8,6 +8,7 @@ import org.springframework.hateoas.Resources;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import static org.springframework.hateoas.core.DummyInvocationUtils.methodOn;
@@ -26,8 +27,8 @@ public class DogController {
     @GetMapping("/dogs/breeds")
     public Resources<Resource<Dog>> all() {
         List<Resource<Dog>> dogs = repository.findAll().stream()
-                .map(assembler::toResource)
-                .collect(Collectors.toList());
+                .map(assembler::toResource).sorted((d11, d12) ->
+                        d11.getContent().getBread().compareToIgnoreCase(d12.getContent().getBread())).collect(Collectors.toList());
         return new Resources<>(dogs, linkTo(methodOn(DogController.class).all()).withSelfRel());
     }
 
