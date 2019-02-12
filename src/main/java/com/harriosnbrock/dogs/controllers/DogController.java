@@ -6,6 +6,7 @@ import com.harriosnbrock.dogs.respositories.DogRepository;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Comparator;
@@ -32,11 +33,26 @@ public class DogController {
         return new Resources<>(dogs, linkTo(methodOn(DogController.class).all()).withSelfRel());
     }
 
+//    @GetMapping("/dogs/breeds/{name}")
+//    public Resource<Dog> findOne(@PathVariable String name) {
+//        Dog dog = repository.findOne().orElse(null);
+//        return assembler.toResource(dog);
+//    }
+
     @GetMapping("/dogs/weight")
     public Resources<Resource<Dog>> allByWeight() {
         List<Resource<Dog>> dogs = repository.findAll().stream()
                 .map(assembler::toResource).sorted((d11, d12) ->
                         d12.getContent().getWeight() - (d11.getContent().getWeight())).collect(Collectors.toList());
+        return new Resources<>(dogs, linkTo(methodOn(DogController.class).all()).withSelfRel());
+    }
+
+    @GetMapping("/dogs/apartment")
+    public Resources<Resource<Dog>> byApartment() {
+        List<Resource<Dog>> dogs = repository.findAll().stream()
+                .map(assembler::toResource)
+                .filter(dog -> dog.getContent().isSuitableApartment() == true)
+                .collect(Collectors.toList());
         return new Resources<>(dogs, linkTo(methodOn(DogController.class).all()).withSelfRel());
     }
 
