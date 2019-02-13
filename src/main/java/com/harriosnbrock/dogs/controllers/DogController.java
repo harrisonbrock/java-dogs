@@ -28,13 +28,11 @@ public class DogController {
         this.assembler = assembler;
     }
 
-    @GetMapping("/dogs/breeds")
+    @GetMapping("/dogs/breads")
     public Resources<Resource<Dog>> all() {
         List<Resource<Dog>> dogs = repository.findAll().stream()
-                .map(assembler::toResource)
-                .sorted((d11, d12) ->
-                        d11.getContent().getBread().compareToIgnoreCase(d12.getContent().getBread()))
-                .collect(Collectors.toList());
+                .sorted(Comparator.comparing(Dog::getBread))
+                .map(assembler::toResource).collect(Collectors.toList());
         return new Resources<>(dogs, linkTo(methodOn(DogController.class).all()).withSelfRel());
     }
 
@@ -95,7 +93,7 @@ public class DogController {
     }
 
     @DeleteMapping("/dogs/{id}")
-    public ResponseEntity<?> deleteDog(@PathVariable Long id){
+    public ResponseEntity<?> deleteDogById(@PathVariable Long id){
         Optional<Dog> dog = repository.findById(id);
         if (dog.isPresent()) {
             repository.deleteById(id);
@@ -105,5 +103,18 @@ public class DogController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @DeleteMapping("/dogs/bread/{bread}")
+    public ResponseEntity<?> deleteDogByBread(@PathVariable String bread){
+
+        bread = WordUtils.capitalizeFully(bread);
+//        List<Dog> dogs =  repository.findByBread(bread);
+//        System.out.println(dogs.get(0).getBread());
+        System.out.println("delete by bread");
+        repository.deleteByBread(bread);
+        System.out.println("deleted");
+        return ResponseEntity.noContent().build();
+    }
+
 
 }
