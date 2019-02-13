@@ -3,6 +3,7 @@ package com.harriosnbrock.dogs.controllers;
 import com.harriosnbrock.dogs.DogResourceAssembler;
 import com.harriosnbrock.dogs.domain.Dog;
 import com.harriosnbrock.dogs.respositories.DogRepository;
+import org.apache.commons.text.WordUtils;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,19 +29,25 @@ public class DogController {
     @GetMapping("/dogs/breeds")
     public Resources<Resource<Dog>> all() {
         List<Resource<Dog>> dogs = repository.findAll().stream()
-                .map(assembler::toResource).sorted((d11, d12) ->
-                        d11.getContent().getBread().compareToIgnoreCase(d12.getContent().getBread())).collect(Collectors.toList());
+                .map(assembler::toResource)
+                .sorted((d11, d12) ->
+                        d11.getContent().getBread().compareToIgnoreCase(d12.getContent().getBread()))
+                .collect(Collectors.toList());
         return new Resources<>(dogs, linkTo(methodOn(DogController.class).all()).withSelfRel());
     }
 
-//    @GetMapping("/dogs/breeds/{name}")
-//    public Resource<Dog> findOne(@PathVariable String name) {
-//        Dog dog = repository.findOne().orElse(null);
-//        return assembler.toResource(dog);
-//    }
+    @GetMapping("/dogs/breeds/{name}")
+    public Resources<Resource<Dog>> findByBreed(@PathVariable String name) {
+        name = WordUtils.capitalizeFully(name);
+        List<Resource<Dog>> dogs = repository.findByBread(name).stream()
+                .map(assembler::toResource)
+                .collect(Collectors.toList());
+        return new Resources<>(dogs, linkTo(methodOn(DogController.class).findByBreed(name)).withSelfRel());
+    }
 
     @GetMapping("/dogs/weight")
     public Resources<Resource<Dog>> allByWeight() {
+
         List<Resource<Dog>> dogs = repository.findAll().stream()
                 .map(assembler::toResource).sorted((d11, d12) ->
                         d12.getContent().getWeight() - (d11.getContent().getWeight())).collect(Collectors.toList());
@@ -49,9 +56,9 @@ public class DogController {
 
     @GetMapping("/dogs/apartment")
     public Resources<Resource<Dog>> byApartment() {
-        List<Resource<Dog>> dogs = repository.findAll().stream()
+        List<Resource<Dog>> dogs = repository.findBySuitableApartmentIsTrue().stream()
                 .map(assembler::toResource)
-                .filter(dog -> dog.getContent().isSuitableApartment() == true)
+//                .filter(dog -> dog.getContent().isSuitableApartment())
                 .collect(Collectors.toList());
         return new Resources<>(dogs, linkTo(methodOn(DogController.class).all()).withSelfRel());
     }
