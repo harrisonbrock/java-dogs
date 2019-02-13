@@ -49,8 +49,8 @@ public class DogController {
     public Resources<Resource<Dog>> allByWeight() {
 
         List<Resource<Dog>> dogs = repository.findAll().stream()
-                .map(assembler::toResource).sorted((d11, d12) ->
-                        d12.getContent().getWeight() - (d11.getContent().getWeight())).collect(Collectors.toList());
+                .sorted(Comparator.comparing(Dog::getBread).reversed())
+                .map(assembler::toResource).collect(Collectors.toList());
         return new Resources<>(dogs, linkTo(methodOn(DogController.class).all()).withSelfRel());
     }
 
