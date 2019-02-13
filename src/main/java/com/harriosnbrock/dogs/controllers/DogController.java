@@ -6,10 +6,11 @@ import com.harriosnbrock.dogs.respositories.DogRepository;
 import org.apache.commons.text.WordUtils;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,6 +62,27 @@ public class DogController {
 //                .filter(dog -> dog.getContent().isSuitableApartment())
                 .collect(Collectors.toList());
         return new Resources<>(dogs, linkTo(methodOn(DogController.class).all()).withSelfRel());
+    }
+
+    @PutMapping("/dog/{id}")
+    public ResponseEntity<?> replaceDog(@RequestBody Dog newDog, @PathVariable Long id) throws URISyntaxException {
+        Dog updateDog = repository.findById(id)
+                .map(dog -> {
+                    dog.setBread(newDog.getBread());
+                    dog.setWeight(newDog.getWeight());
+                    dog.setSuitableApartment(newDog.isSuitableApartment());
+                    return repository.save(dog);
+                })
+                .orElseGet(() ->{
+                    newDog.setId(id);
+                    return repository.save(newDog);
+                });
+
+        Resource<Dog> resource = assembler.toResource(updateDog);
+        return ResponseEntity
+                .created(new URI(resource.getId().expand().getHref()))
+                .body(resource);
+
     }
 
 }
