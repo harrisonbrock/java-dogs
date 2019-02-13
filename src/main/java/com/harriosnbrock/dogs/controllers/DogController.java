@@ -64,7 +64,15 @@ public class DogController {
         return new Resources<>(dogs, linkTo(methodOn(DogController.class).all()).withSelfRel());
     }
 
-    @PutMapping("/dog/{id}")
+    @PostMapping("/dogs")
+    public ResponseEntity<?> addDog(@RequestBody Dog newDog) throws URISyntaxException {
+        Dog dog = repository.save(newDog);
+        Resource<Dog> resource = assembler.toResource(dog);
+        return ResponseEntity
+                .created(new URI(resource.getId().expand().getHref()))
+                .body(resource);
+    }
+    @PutMapping("/dogs/{id}")
     public ResponseEntity<?> replaceDog(@RequestBody Dog newDog, @PathVariable Long id) throws URISyntaxException {
         Dog updateDog = repository.findById(id)
                 .map(dog -> {
