@@ -13,6 +13,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import static org.springframework.hateoas.core.DummyInvocationUtils.methodOn;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -91,6 +92,18 @@ public class DogController {
                 .created(new URI(resource.getId().expand().getHref()))
                 .body(resource);
 
+    }
+
+    @DeleteMapping("/dogs/{id}")
+    public ResponseEntity<?> deleteDog(@PathVariable Long id){
+        Optional<Dog> dog = repository.findById(id);
+        if (dog.isPresent()) {
+            repository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+        else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 }
